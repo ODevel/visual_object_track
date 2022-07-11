@@ -13,8 +13,9 @@ import sys
 if(len(sys.argv) != 2):
     print('''
     Usage:
-    python train_obj_opencv.py <test_name>
+    python detect_obj_opencv.py <test_name>
     ''')
+    quit()
 #cnn = tf.keras.models.load_model('model-a.h5')
 
 # Preprocessing the Test set
