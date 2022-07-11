@@ -8,7 +8,13 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.preprocessing.image import ImageDataGenerator
 #import tensorflow as tf
 import cv2
+import sys
 
+if(len(sys.argv) != 2):
+    print('''
+    Usage:
+    python train_obj_opencv.py <test_name>
+    ''')
 #cnn = tf.keras.models.load_model('model-a.h5')
 
 # Preprocessing the Test set
@@ -22,17 +28,17 @@ epoch = 0
 img_or_lab = 0
 #loss, acc = cnn.evaluate(test_set[epoch][img_or_lab], test_set[0][1], verbose=2)
 
-
+import sys
 import numpy as np
 import os
 import time
 
-test_name = 'blurbody'
+test_name = sys.argv[1]
 recognizer = cv2.face.LBPHFaceRecognizer_create()
-cascadePath = test_name + '_cascade.xml'
+cascadePath = test_name + '/'+ test_name +'/cascade/' + 'cascade.xml'
 faceCascade = cv2.CascadeClassifier(cascadePath);
 recognizer = cv2.face.LBPHFaceRecognizer_create()
-recognizer.read(test_name + '/' + test_name + '/trainer.yml')
+recognizer.read(test_name + '/' + test_name + '/trainer/trainer.yml')
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -40,8 +46,8 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 id = 0
 
 # names related to ids: example ==> Marcelo: id=1,  etc
+# TODO replace with names of objects
 names = ['Eyes Closed', 'Eyes Open, Okay', 'No-Yawn, Okay', 'Yawn'] 
-# consfusion between open, no-yawn
 
 # Initialize and start realtime video capture
 cam = cv2.VideoCapture(0)
@@ -56,12 +62,12 @@ t1 = time.time()
 id_list = []
 
 # tmp
-img_lis = os.listdir('BlurBody/BlurBody/p/')
+img_lis = os.listdir(test_name + '/' + test_name + '/p/')
 for (i, im) in enumerate(img_lis):
 #while True:
 #if True:
     #ret, img =cam.read()
-    img = cv2.imread('BlurBody/BlurBody/p/'+im)
+    img = cv2.imread(test_name + '/' + test_name +'/p/'+im)
     img1 = cv2.resize(img, (145,145))
     #img = cv2.flip(img, -1) # Flip vertically
     #img = cv2.imread('dataset/1_5.jpg')
@@ -75,13 +81,13 @@ for (i, im) in enumerate(img_lis):
        )
 
     
-    shp = (1,145,145,3)
-    arr_t = np.ones(shp)
-    for i in range(0,1):
-        for j in range(0, 145):
-            for k in range(0,145):
-                for l in range(0,3):
-                    arr_t[i,j,k,l] = img1[j,k,l]
+    #shp = (1,145,145,3)
+    #arr_t = np.ones(shp)
+    #for i in range(0,1):
+    #    for j in range(0, 145):
+    #        for k in range(0,145):
+    #            for l in range(0,3):
+    #                arr_t[i,j,k,l] = img1[j,k,l]
 
     #pred_ar = cnn.predict(arr_t)
     #high = -255
@@ -90,16 +96,20 @@ for (i, im) in enumerate(img_lis):
     #    if(pred_ar[0,i] > high):
     #        high = pred_ar[0,i]
     #        prediction = i
-    if(len(faces) > 0):
-        print(im)
+    
+    #if(len(faces) > 0):
+    #    print(im)
     
     for(x,y,w,h) in faces:
         cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
-        id, confidence = recognizer.predict(img[y:y+h,x:x+w])
-        
+
+        # Prediction using OpenCV - Part A
+        id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
+
+        # Prediction using Tensoflow direct - Part B
         #id_list.append(names[prediction])
 
-        cv2.putText(img, 'Car', (x+5,y-5), font, 1, (255,255,255), 2)
+        cv2.putText(img, test_name, (x+5,y-5), font, 1, (255,255,255), 2)
         cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0),1)
     
     cv2.imshow('camera',img) 
