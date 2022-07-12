@@ -2,12 +2,20 @@ import cv2
 import numpy as np
 from PIL import Image
 import os
+import sys
 
 # Path for face image database
-path = 'BlurBody/BlurBody/p/'
+if(len(sys.argv) != 2):
+    print('''
+    Usage:
+    python train_obj_opencv.py <test_name>
+    ''')
+    
+test = sys.argv[1]
+path = test + '/' + test + '/' + '/p/'
 
 recognizer = cv2.face.LBPHFaceRecognizer_create()
-detector = cv2.CascadeClassifier("blurbody_cascade.xml");
+detector = cv2.CascadeClassifier(test + '/' + test + '/cascade/' + 'cascade.xml');
 
 # function to get the images and label data
 def getImagesAndLabels(path, id):
@@ -27,7 +35,7 @@ def getImagesAndLabels(path, id):
 
 print ("\n [INFO] Training faces. It will take a few seconds. Wait ...")
 faces,ids = getImagesAndLabels(path,0)
-path = 'BlurBody/BlurBody/n/'
+path = './n/'
 faces1,ids1 = getImagesAndLabels(path,1)
 for f in faces1:
     faces.append(f)
@@ -36,10 +44,10 @@ for i in ids1:
 recognizer.train(faces, np.array(ids))
 
 # Save the model into trainer/trainer.yml
-if(not os.path.exists('./trainer')):
-    os.mkdir('./trainer')
+if(not os.path.exists(test+ '/' + test + '/trainer')):
+    os.mkdir(test + '/' + test + '/trainer')
 
-recognizer.write('trainer/blurbody_trainer.yml') # recognizer.save() worked on Mac, but not on Pi
+recognizer.write(test+'/' + test + '/trainer/trainer.yml') # recognizer.save() worked on Mac, but not on Pi
 
 # Print the numer of faces trained and end program
 print("\n [INFO] {0} faces trained. Exiting Program".format(len(np.unique(ids))))

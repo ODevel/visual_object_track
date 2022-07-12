@@ -35,7 +35,6 @@ import os
 import time
 
 test_name = sys.argv[1]
-recognizer = cv2.face.LBPHFaceRecognizer_create()
 cascadePath = test_name + '/'+ test_name +'/cascade/' + 'cascade.xml'
 faceCascade = cv2.CascadeClassifier(cascadePath);
 recognizer = cv2.face.LBPHFaceRecognizer_create()
