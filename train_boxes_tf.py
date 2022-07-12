@@ -20,11 +20,11 @@ import keras_tuner as kt
 
 test = 'blurbody'
 
-def model_builder(hp):
+def model_builder(hp, shpe):
     # Initialising the CNN
     cnn = tf.keras.models.Sequential()
     
-    cnn.add(Conv2D(256, (3, 3), activation="relu", input_shape=[145,145,3]))
+    cnn.add(Conv2D(256, (3, 3), activation="relu", input_shape=[shpe[0], shpe[1],3]))
     cnn.add(MaxPooling2D(2, 2))
     cnn.add(Conv2D(128, (3, 3), activation="relu"))
     cnn.add(MaxPooling2D(2, 2))
@@ -35,25 +35,25 @@ def model_builder(hp):
     cnn.add(Flatten())
     #cnn.add(Dropout(0.5))
     cnn.add(Dense(64, activation="relu"))
-    cnn.add(Dense(4, activation="relu"))
+    cnn.add(Dense(1, activation="relu"))
     
     
     # Part 3 - Training the CNN
     
     # Compiling the CNN
-    #cnn.compile(loss="binary_crossentropy", metrics=["accuracy"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
-    hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-1, 1.0])
-    cnn.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=["accuracy"], optimizer=tf.keras.optimizers.Adam(learning_rate=hp_learning_rate)) #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    cnn.compile(loss="binary_crossentropy", metrics=["accuracy"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    ##hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-1, 1.0])
+    ##cnn.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=["accuracy"], optimizer=tf.keras.optimizers.Adam(learning_rate=hp_learning_rate)) #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
     return cnn
     
-tuner = kt.Hyperband(model_builder,
-                     objective='val_accuracy',
-                     max_epochs=40,
-                     factor=3,
-                     directory='my_dir',
-                     project_name='intro_to_kt')
+#tuner = kt.Hyperband(model_builder,
+#                     objective='val_accuracy',
+#                     max_epochs=40,
+#                     factor=3,
+#                     directory='my_dir',
+#                     project_name='intro_to_kt')
 
-stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+#stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
 
 
 
@@ -73,20 +73,21 @@ for lin in line_arr:
         continue
     print('Image found')
     img = cv2.imread(path)
-    l = img.shape[0]
-    b = img.shape[1]
-    img = cv2.resize(img, (145,145))
-    x_0 = int(int(lin[2]) * 145/b)
-    x_1 = int(int(lin[3]) * 145/l)
-    y_0 = int(int(lin[4]) * 145/b)
-    y_1 = int(int(lin[5]) * 145/l)
+    if(i == 0):
+        l = img.shape[0]
+        b = img.shape[1]
+    img = cv2.resize(img, (l,b))
+    x_0 = int(int(lin[2]) * b/img.shape[0])
+    x_1 = int(int(lin[3]) * l/img.shape[1])
+    y_0 = int(int(lin[4]) * b/img.shape[0])
+    y_1 = int(int(lin[5]) * l/img.shape[1])
 
     #cv2.rectangle(img,(x_0,x_1), (y_0+x_0,y_1+x_1), (0,255,0), 2)
     ##cv2.rectangle(img,(x_0,x_0), (x_1,y_1), (0,255,0), 2)
     #cv2.imwrite('cam.jpg', img)
     #input()
 
-    point = np.array([[[x_0, x_1, x_0 + y_0, x_1 + y_1]]])
+    point = np.array([[x_0]])#, x_1, x_0 + y_0, x_1 + y_1]]])
     if(i == 0):
         X = np.array([img])
         y = point
@@ -94,8 +95,6 @@ for lin in line_arr:
     else:
         X = np.concatenate((X , np.array([img])))
         y = np.concatenate((y, point))
-
-
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
@@ -108,13 +107,14 @@ test_generator = test_generator.flow(np.array(X_test), y_test, shuffle=False)
 
 
 
-tuner.search(X_train,tf.expand_dims(y_train,1), epochs=40, validation_split=0.2, callbacks=[stop_early])
+#tuner.search(X_train,tf.expand_dims(y_train,1), epochs=40, validation_split=0.2, callbacks=[stop_early])
 
 # Get the optimal hyperparameters
-best_hps=tuner.get_best_hyperparameters(num_trials=10)[0]
+#best_hps=tuner.get_best_hyperparameters(num_trials=10)[0]
 
-cnn = tuner.hypermodel.build(best_hps)
-#history = cnn.fit(train_generator, epochs=40, validation_data=test_generator, shuffle=True, validation_steps=len(y))
+#cnn = tuner.hypermodel.build(best_hps)
+cnn = model_builder(True, (l, b))
+history = cnn.fit(train_generator, epochs=40, validation_data=test_generator, shuffle=True, validation_steps=len(y))
 
 print('--Traing is done --\n')
    
