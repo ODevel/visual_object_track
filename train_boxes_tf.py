@@ -18,13 +18,14 @@ from sklearn.model_selection import train_test_split
 import sys
 import keras_tuner as kt
 
-test = 'blurbody'
+test = 'panda'
 
 def model_builder(hp, shpe):
     # Initialising the CNN
     cnn = tf.keras.models.Sequential()
+    #print('MODEL_BUILDER: shape:: ' , shpe)
     
-    cnn.add(Conv2D(256, (3, 3), activation="relu", input_shape=[shpe[0], shpe[1],3]))
+    cnn.add(Conv2D(256, (3, 3), activation="relu", input_shape=[shpe[0], shpe[1], 3]))
     cnn.add(MaxPooling2D(2, 2))
     cnn.add(Conv2D(128, (3, 3), activation="relu"))
     cnn.add(MaxPooling2D(2, 2))
@@ -33,7 +34,7 @@ def model_builder(hp, shpe):
     cnn.add(Conv2D(128, (3, 3), activation="relu"))
     cnn.add(MaxPooling2D(2, 2))
     cnn.add(Flatten())
-    #cnn.add(Dropout(0.5))
+    cnn.add(Dropout(0.5))
     cnn.add(Dense(64, activation="relu"))
     cnn.add(Dense(1, activation="relu"))
     
@@ -41,7 +42,8 @@ def model_builder(hp, shpe):
     # Part 3 - Training the CNN
     
     # Compiling the CNN
-    cnn.compile(loss="binary_crossentropy", metrics=["accuracy"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    #cnn.compile(loss="binary_crossentropy", metrics=["accuracy"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    cnn.compile(loss="mean_squared_error", metrics=["mean_squared_error"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
     ##hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-1, 1.0])
     ##cnn.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=["accuracy"], optimizer=tf.keras.optimizers.Adam(learning_rate=hp_learning_rate)) #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
     return cnn
@@ -53,7 +55,7 @@ def model_builder(hp, shpe):
 #                     directory='my_dir',
 #                     project_name='intro_to_kt')
 
-#stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+#stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=2)
 
 
 
@@ -69,43 +71,111 @@ i = 0
 for lin in line_arr:
     path = test + '/' + test+'/p/' +lin[0][2:]
     if(not os.path.exists(path)):
-        print(path, ': image not found')
+        #print(path, ': image not found')
         continue
-    print('Image found')
+    #print('Image found')
     img = cv2.imread(path)
     if(i == 0):
         l = img.shape[0]
         b = img.shape[1]
-    img = cv2.resize(img, (l,b))
-    x_0 = int(int(lin[2]) * b/img.shape[0])
-    x_1 = int(int(lin[3]) * l/img.shape[1])
-    y_0 = int(int(lin[4]) * b/img.shape[0])
-    y_1 = int(int(lin[5]) * l/img.shape[1])
+        lf = 1
+        bf = 1
+        if(img.shape[0] > 128 and img.shape[1] > 96):
+            l = 128
+            b = 96
+            lf = 128/img.shape[0]
+            bf = 96/img.shape[1]
+        elif(imf.shape[0] > 128):
+            l = 128
+            lf = 128/img.shape[0]
+        elif(img.shape[1] > 96):
+            b = 96
+            bf = 96/img.shape[1]
+
+        print('l:', l, 'b:', b, img.shape)
+    img = cv2.resize(img, (b,l))
+    print(img.shape)
+    x_0 = int(int(lin[2])//lf)
+    x_1 = int(int(lin[3])//bf)
+    y_0 = int(int(lin[4])//lf)
+    y_1 = int(int(lin[5])//bf)
 
     #cv2.rectangle(img,(x_0,x_1), (y_0+x_0,y_1+x_1), (0,255,0), 2)
     ##cv2.rectangle(img,(x_0,x_0), (x_1,y_1), (0,255,0), 2)
     #cv2.imwrite('cam.jpg', img)
     #input()
 
-    point = np.array([[x_0]])#, x_1, x_0 + y_0, x_1 + y_1]]])
+    point00 = np.array([[x_0]])#, x_1, x_0 + y_0, x_1 + y_1]])
+    point01 = np.array([[x_1]])
+    point10 = np.array([[x_0+y_0]])
+    point11 = np.array([[x_1+y_1]])
     if(i == 0):
         X = np.array([img])
-        y = point
+        y00 = point00
+        y01 = point01
+        y10 = point10
+        y11 = point11
         i += 1
     else:
         X = np.concatenate((X , np.array([img])))
-        y = np.concatenate((y, point))
+        y00 = np.concatenate((y00, point00))
+        y01 = np.concatenate((y01, point01))
+        y10 = np.concatenate((y10, point10))
+        y11 = np.concatenate((y11, point11))
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+X_train00, X_test00, y_train00, y_test00 = train_test_split(X, y00, test_size=0.3, random_state=42)
 train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
 test_generator = ImageDataGenerator(rescale=1/255)
+train_generator = train_generator.flow(np.array(X_train00), y_train00, shuffle=False)
+test_generator = test_generator.flow(np.array(X_test00), y_test00, shuffle=False)
+cnn00 = model_builder(True, (l, b))
+history00 = cnn00.fit(X_train00, y_train00,  epochs=200, verbose=1, validation_split=0.2)
 
-train_generator = train_generator.flow(np.array(X_train), y_train, shuffle=False)
-test_generator = test_generator.flow(np.array(X_test), y_test, shuffle=False)
+X_train01, X_test01, y_train01, y_test01 = train_test_split(X, y01, test_size=0.3, random_state=42)
+train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
+test_generator = ImageDataGenerator(rescale=1/255)
+train_generator = train_generator.flow(np.array(X_train01), y_train01, shuffle=False)
+test_generator = test_generator.flow(np.array(X_test01), y_test01, shuffle=False)
+cnn01 = model_builder(True, (l, b))
+history01 = cnn01.fit(X_train01, y_train01,  epochs=200, verbose=1, validation_split=0.2)
+
+X_train10, X_test10, y_train10, y_test10 = train_test_split(X, y10, test_size=0.3, random_state=42)
+train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
+test_generator = ImageDataGenerator(rescale=1/255)
+train_generator = train_generator.flow(np.array(X_train10), y_train10, shuffle=False)
+test_generator = test_generator.flow(np.array(X_test10), y_test10, shuffle=False)
+cnn10 = model_builder(True, (l, b))
+history10 = cnn10.fit(X_train10, y_train10,  epochs=200, verbose=1, validation_split=0.2)
+
+X_train11, X_test11, y_train11, y_test11 = train_test_split(X, y11, test_size=0.3, random_state=42)
+train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
+test_generator = ImageDataGenerator(rescale=1/255)
+train_generator = train_generator.flow(X_train11, y_train11, shuffle=False)
+test_generator = test_generator.flow(X_test11, y_test11, shuffle=False)
+cnn11 = model_builder(True, (l, b))
+history11 = cnn11.fit(X_train11, y_train11,  epochs=200, verbose=1, validation_split=0.2)
 #train_set = np.concatenate((np.reshape(X_train, (len(X_train),1)), np.reshape(y_train, (len(y_train),1))), axis=1)
 #test_set = np.concatenate((np.reshape(X_test, (len(X_test),1)), np.reshape(y_test, (len(y_test),1))), axis=1)
 
+cnn00.save(test +'_00.h5')
+cnn01.save(test +'_01.h5')
+cnn10.save(test +'_10.h5')
+cnn11.save(test +'_11.h5')
 
+y_pred00 = cnn00.predict(X_train00)
+y_pred01 = cnn01.predict(X_train00)
+y_pred10 = cnn10.predict(X_train00)
+y_pred11 = cnn11.predict(X_train00)
+
+boxes = np.concatenate((y_pred00, y_pred01), axis=1)
+boxes = np.concatenate((boxes, y_pred10), axis=1)
+boxes = np.concatenate((boxes, y_pred11), axis=1)
+
+for (i,img) in enumerate(X_train00):
+    x,y,w,h = boxes[i]
+    cv2.rectangle(img, (int(x),int(y)),(int((x+w)),int((y+h))), (0,255,0), 2)
+    cv2.imwrite('cam' +str(i) +'.jpg', img)
+    #input()
 
 #tuner.search(X_train,tf.expand_dims(y_train,1), epochs=40, validation_split=0.2, callbacks=[stop_early])
 
@@ -113,8 +183,7 @@ test_generator = test_generator.flow(np.array(X_test), y_test, shuffle=False)
 #best_hps=tuner.get_best_hyperparameters(num_trials=10)[0]
 
 #cnn = tuner.hypermodel.build(best_hps)
-cnn = model_builder(True, (l, b))
-history = cnn.fit(train_generator, epochs=40, validation_data=test_generator, shuffle=True, validation_steps=len(y))
+#history = cnn.fit(train_generator, epochs=40, validation_data=test_generator, shuffle=True, validation_steps=len(y))
 
 print('--Traing is done --\n')
    
