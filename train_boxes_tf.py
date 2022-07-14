@@ -17,8 +17,10 @@ import cv2
 from sklearn.model_selection import train_test_split
 import sys
 import keras_tuner as kt
+import sys
+import time
 
-test = 'panda'
+test = sys.argv[-1]
 
 def model_builder(hp, shpe):
     # Initialising the CNN
@@ -58,7 +60,7 @@ def model_builder(hp, shpe):
 #stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=2)
 
 
-
+statt_time = time.time()
 fp = open(test + '/' + test + '/pos.txt')
 line = fp.readline()
 line_arr = []
@@ -95,15 +97,15 @@ for lin in line_arr:
         print('l:', l, 'b:', b, img.shape)
     img = cv2.resize(img, (b,l))
     print(img.shape)
-    x_0 = int(int(lin[2])//lf)
-    x_1 = int(int(lin[3])//bf)
-    y_0 = int(int(lin[4])//lf)
-    y_1 = int(int(lin[5])//bf)
+    x_0 = int(int(lin[2])*bf)
+    x_1 = int(int(lin[3])*lf)
+    y_0 = int(int(lin[4])*bf)
+    y_1 = int(int(lin[5])*lf)
 
     #cv2.rectangle(img,(x_0,x_1), (y_0+x_0,y_1+x_1), (0,255,0), 2)
     ##cv2.rectangle(img,(x_0,x_0), (x_1,y_1), (0,255,0), 2)
-    #cv2.imwrite('cam.jpg', img)
-    #input()
+    #cv2.imwrite('cam' + str(i) + '.jpg', img)
+    ##input()
 
     point00 = np.array([[x_0]])#, x_1, x_0 + y_0, x_1 + y_1]])
     point01 = np.array([[x_1]])
@@ -115,13 +117,13 @@ for lin in line_arr:
         y01 = point01
         y10 = point10
         y11 = point11
-        i += 1
     else:
         X = np.concatenate((X , np.array([img])))
         y00 = np.concatenate((y00, point00))
         y01 = np.concatenate((y01, point01))
         y10 = np.concatenate((y10, point10))
         y11 = np.concatenate((y11, point11))
+    i += 1
 
 X_train00, X_test00, y_train00, y_test00 = train_test_split(X, y00, test_size=0.3, random_state=42)
 train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
@@ -187,3 +189,5 @@ for (i,img) in enumerate(X_train00):
 
 print('--Traing is done --\n')
    
+end_time = time.time()
+print('total time taken:' , end_time - start_time)

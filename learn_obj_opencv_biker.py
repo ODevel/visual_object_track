@@ -21,6 +21,7 @@ import tensorflow as tf
 import cv2
 from sklearn.model_selection import train_test_split
 import sys
+import time
 
 if(len(sys.argv) != 3):
     print('''
@@ -88,6 +89,7 @@ def getImagesAndLabels(path, id):
         i += 1
     return faceSamples,ids
 
+start_time = time.time()
 print ("\n [INFO] Training faces. It will take a few seconds. Wait ...")
 faces,ids = getImagesAndLabels(path,0)
 path = './n/'
@@ -99,7 +101,6 @@ for f in faces1:
     faces.append(f)
 for i in ids1:
     ids.append(i)
-
 if(train_mode == 'opencv'):
     recognizer.train(faces, np.array(ids))
     
@@ -135,9 +136,12 @@ else:
     print('--Traing is done --\n')
     
     # Predict a sample image
-    im = cv2.imread(test_name +'/' +test_name+'/test/' + os.listdir(test_name +'/' +test_name+'/test/')[0])
-    im = cv2.resize(im, (145,145))
-    im = tf.expand_dims(tf, 0)
-    print(cnn.predict(im))
-    # Save the checkpoint
-    cnn.save('model-'+ test_name + '.h5')
+    ##im = cv2.imread(test_name +'/' +test_name+'/test/' + os.listdir(test_name +'/' +test_name+'/test/')[0])
+    ##im = cv2.resize(im, (145,145))
+    ##im = tf.expand_dims(tf, 0)
+    ##print(cnn.predict(im))
+    ### Save the checkpoint
+    ##cnn.save('model-'+ test_name + '.h5')
+
+end_time = time.time()
+print('total time taken: ', end_time - start_time)
