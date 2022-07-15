@@ -17,7 +17,6 @@ import cv2
 from sklearn.model_selection import train_test_split
 import sys
 import keras_tuner as kt
-import sys
 import time
 
 test = sys.argv[-1]
