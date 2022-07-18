@@ -36,9 +36,12 @@ def model_builder(hp, shpe):
     return cnn
 
 
-class_a = sys.argv[-3]
+#class_a = 'blurbody'
+#class_b = 'panda'
+#class_c = 'bird1'
+class_a = sys.argv[-1]
 class_b = sys.argv[-2]
-class_c = sys.argv[-1]
+class_c = sys.argv[-3]
 
 # Build class A
 l = 128
@@ -105,5 +108,24 @@ train_generator = train_generator.flow(np.array(X_train), y_train, shuffle=False
 test_generator = test_generator.flow(np.array(X_test), y_test, shuffle=False)
 cnn = model_builder(True, (l, b))
 history = cnn.fit(X_train, y_train,  epochs=100, verbose=1, validation_split=0.2)
+accuracy = history.history['accuracy']
+val_accuracy = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(len(accuracy))
 
-cnn.save('simple_detection.h5')
+import matplotlib.pyplot as plt
+plt.ion()
+plt.figure()
+plt.plot(epochs, accuracy, "b", label="trainning accuracy")
+plt.plot(epochs, val_accuracy, "r", label="validation accuracy")
+plt.legend()
+plt.show()
+
+plt.figure()
+plt.plot(epochs, loss, "b", label="trainning loss")
+plt.plot(epochs, val_loss, "r", label="validation loss")
+plt.legend()
+plt.show()
+
+#cnn.save('simple_detection.h5')

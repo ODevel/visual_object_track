@@ -18,8 +18,11 @@ from sklearn.model_selection import train_test_split
 import sys
 import keras_tuner as kt
 import time
+import matplotlib.pyplot as plt
 
 test = sys.argv[-1]
+print('Test: ' , test)
+start_time = time.time()
 
 def model_builder(hp, shpe):
     # Initialising the CNN
@@ -131,6 +134,28 @@ train_generator = train_generator.flow(np.array(X_train00), y_train00, shuffle=F
 test_generator = test_generator.flow(np.array(X_test00), y_test00, shuffle=False)
 cnn00 = model_builder(True, (l, b))
 history00 = cnn00.fit(X_train00, y_train00,  epochs=200, verbose=1, validation_split=0.2)
+cnn00.save(test +'_00.h5')
+
+history = history00
+accuracy = history.history['mean_squared_error']
+val_accuracy = history.history['val_mean_squared_error']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(len(accuracy))
+
+plt.ion()
+plt.figure()
+plt.plot(epochs, accuracy, "b", label="trainning accuracy")
+plt.plot(epochs, val_accuracy, "r", label="validation accuracy")
+plt.legend()
+plt.show()
+plt.figure()
+
+plt.plot(epochs, loss, "b", label="trainning loss")
+plt.plot(epochs, val_loss, "r", label="validation loss")
+plt.legend()
+plt.show()
+
 
 X_train01, X_test01, y_train01, y_test01 = train_test_split(X, y01, test_size=0.3, random_state=42)
 train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
@@ -139,6 +164,28 @@ train_generator = train_generator.flow(np.array(X_train01), y_train01, shuffle=F
 test_generator = test_generator.flow(np.array(X_test01), y_test01, shuffle=False)
 cnn01 = model_builder(True, (l, b))
 history01 = cnn01.fit(X_train01, y_train01,  epochs=200, verbose=1, validation_split=0.2)
+cnn01.save(test +'_01.h5')
+
+history = history01
+accuracy = history.history['mean_squared_error']
+val_accuracy = history.history['val_mean_squared_error']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(len(accuracy))
+
+plt.ion()
+plt.figure()
+plt.plot(epochs, accuracy, "b", label="trainning accuracy")
+plt.plot(epochs, val_accuracy, "r", label="validation accuracy")
+plt.legend()
+plt.show()
+
+plt.figure()
+plt.plot(epochs, loss, "b", label="trainning loss")
+plt.plot(epochs, val_loss, "r", label="validation loss")
+plt.legend()
+plt.show()
+
 
 X_train10, X_test10, y_train10, y_test10 = train_test_split(X, y10, test_size=0.3, random_state=42)
 train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
@@ -147,6 +194,28 @@ train_generator = train_generator.flow(np.array(X_train10), y_train10, shuffle=F
 test_generator = test_generator.flow(np.array(X_test10), y_test10, shuffle=False)
 cnn10 = model_builder(True, (l, b))
 history10 = cnn10.fit(X_train10, y_train10,  epochs=200, verbose=1, validation_split=0.2)
+cnn10.save(test +'_10.h5')
+
+history = history10
+accuracy = history.history['mean_squared_error']
+val_accuracy = history.history['val_mean_squared_error']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(len(accuracy))
+
+plt.ion()
+plt.figure()
+plt.plot(epochs, accuracy, "b", label="trainning accuracy")
+plt.plot(epochs, val_accuracy, "r", label="validation accuracy")
+plt.legend()
+plt.show()
+
+plt.figure()
+plt.plot(epochs, loss, "b", label="trainning loss")
+plt.plot(epochs, val_loss, "r", label="validation loss")
+plt.legend()
+plt.show()
+
 
 X_train11, X_test11, y_train11, y_test11 = train_test_split(X, y11, test_size=0.3, random_state=42)
 train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
@@ -155,13 +224,30 @@ train_generator = train_generator.flow(X_train11, y_train11, shuffle=False)
 test_generator = test_generator.flow(X_test11, y_test11, shuffle=False)
 cnn11 = model_builder(True, (l, b))
 history11 = cnn11.fit(X_train11, y_train11,  epochs=200, verbose=1, validation_split=0.2)
+cnn11.save(test +'_11.h5')
 #train_set = np.concatenate((np.reshape(X_train, (len(X_train),1)), np.reshape(y_train, (len(y_train),1))), axis=1)
 #test_set = np.concatenate((np.reshape(X_test, (len(X_test),1)), np.reshape(y_test, (len(y_test),1))), axis=1)
 
-cnn00.save(test +'_00.h5')
-cnn01.save(test +'_01.h5')
-cnn10.save(test +'_10.h5')
-cnn11.save(test +'_11.h5')
+history = history11
+accuracy = history.history['mean_squared_error']
+val_accuracy = history.history['val_mean_squared_error']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs = range(len(accuracy))
+
+plt.ion()
+plt.plot(epochs, accuracy, "b", label="trainning accuracy")
+plt.plot(epochs, val_accuracy, "r", label="validation accuracy")
+plt.legend()
+plt.show()
+plt.figure()
+
+plt.plot(epochs, loss, "b", label="trainning loss")
+plt.plot(epochs, val_loss, "r", label="validation loss")
+plt.legend()
+plt.show()
+
+
 
 y_pred00 = cnn00.predict(X_train00)
 y_pred01 = cnn01.predict(X_train00)

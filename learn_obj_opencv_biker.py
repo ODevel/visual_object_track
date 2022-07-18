@@ -35,11 +35,12 @@ if(len(sys.argv) != 3):
 test_name = sys.argv[-1]
 train_mode = sys.argv[1]
 
-def build_model():
+def build_model(shpe):
+    print(shpe)
     # Initialising the CNN
     cnn = tf.keras.models.Sequential()
     
-    cnn.add(Conv2D(256, (3, 3), activation="relu", input_shape=[145,145,3]))
+    cnn.add(Conv2D(256, (3, 3), activation="relu", input_shape=[shpe[0],shpe[1],3]))
     cnn.add(MaxPooling2D(2, 2))
     cnn.add(Conv2D(128, (3, 3), activation="relu"))
     cnn.add(MaxPooling2D(2, 2))
@@ -53,7 +54,7 @@ def build_model():
     cnn.add(Dense(2, activation="softmax"))
     
     # Compiling the CNN
-    cnn.compile(loss="binary_crossentropy", metrics=["accuracy"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    cnn.compile(loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
     return cnn 
 
 
@@ -66,7 +67,7 @@ detector = cv2.CascadeClassifier(test_name +'/'+ test_name + '/cascade/' + 'casc
 
 #train_mode = 'opencv'
 # function to get the images and label data
-def getImagesAndLabels(path, id):
+def getImagesAndLabelsOpenCV(path, id):
     imagePaths = [os.path.join(path,f) for f in os.listdir(path)]     
     faceSamples=[]
     ids = []
@@ -89,19 +90,85 @@ def getImagesAndLabels(path, id):
         i += 1
     return faceSamples,ids
 
+def getNegativeImg(path, label, shape):
+    print(shape)
+    files = os.listdir(path)
+    i = 0
+    y_train = []
+    for f in files:
+        img = cv2.imread(path + f)
+        img = cv2.resize(img, (shape[1], shape[0]))
+        if( i == 0):
+            X_train = [tf.expand_dims(img,0)]
+        else:
+            X_train.append(tf.expand_dims(img,0))
+        i+=1
+        y_train.append(1)
+    return X_train, y_train
+
+def getImagesAndLabelsTF(test):
+    cnn00 = tf.keras.models.load_model(test +'_00.h5')
+    cnn01 = tf.keras.models.load_model(test +'_01.h5')
+    cnn10 = tf.keras.models.load_model(test +'_10.h5')
+    cnn11 = tf.keras.models.load_model(test +'_11.h5')
+
+    test_p = test +'/' + test +'/'
+    files = os.listdir(test_p +'/p/')
+    i = 0
+    y_train = []
+    for f in files:
+        f = test_p + '/p/' + f
+        img = cv2.imread(f)
+        img_orig =img
+        bf = 1
+        lf = 1
+        if(img.shape[1] > 128 and img.shape[0] > 96):
+            img = cv2.resize(img, (96,128))
+            bf = (img_orig.shape[0]/96)
+            lf = (img_orig.shape[1]/128)
+        elif (img.shape[0] > 96):
+            img = cv2.resize(img, (96, img.shape[1]))
+            bf = (img_orig.shape[0]/96)
+        elif(img.shape[1] > 128):
+            img = cv2.resize(img, (img.shape[0], 128))
+            lf = (img_orig.shape[1]/128)
+        x = cnn00.predict(tf.expand_dims(img, 0))
+        y = cnn01.predict(tf.expand_dims(img, 0))
+        w = cnn10.predict(tf.expand_dims(img, 0))
+        h = cnn11.predict(tf.expand_dims(img, 0))
+    
+        x *= bf
+        y *= lf
+        w *= bf
+        h *= lf
+        img = img_orig[int(x) : int((x+w)),int(y) : int((y+w))]
+        if(img.shape[1] > 128 and img.shape[0] > 96):
+            img = cv2.resize(img, (96,128))
+        elif(img.shape[0] > 96):
+            img = cv2.resize(img, (96, img.shape[1]))
+        else:
+            img = cv2.resize(img, (img.shape[0],128))
+        if(i == 0) :
+            X_train = [tf.expand_dims(img, 0)]
+        else:
+            X_train.append(tf.expand_dims(img,0))
+        i+=1
+        y_train.append(0)
+    return X_train, y_train
+
 start_time = time.time()
 print ("\n [INFO] Training faces. It will take a few seconds. Wait ...")
-faces,ids = getImagesAndLabels(path,0)
-path = './n/'
-faces1,ids1 = getImagesAndLabels(path,1)
-# Negative images
-faces1 = faces1[:300]
-ids1 = ids1[:300]
-for f in faces1:
-    faces.append(f)
-for i in ids1:
-    ids.append(i)
 if(train_mode == 'opencv'):
+    faces,ids = getImagesAndLabelsOpenCV(path,0)
+    path = './n/'
+    faces1,ids1 = getImagesAndLabelsOpenCV(path,1)
+    # Negative images
+    faces1 = faces1[:300]
+    ids1 = ids1[:300]
+    for f in faces1:
+        faces.append(f)
+    for i in ids1:
+        ids.append(i)
     recognizer.train(faces, np.array(ids))
     
     # Save the model into trainer/trainer.yml
@@ -110,13 +177,23 @@ if(train_mode == 'opencv'):
     
     recognizer.write(test_name + '/'+test_name+'/trainer/trainer.yml') 
 else:
-    cnn = build_model()
+    faces, ids = getImagesAndLabelsTF(test_name)
+    path = './n/'
+    faces1,ids1 = getNegativeImg(path,1, (faces[0][0].shape[0], faces[0][0].shape[1]))
+    # Negative images
+    faces1 = faces1[:300]
+    ids1 = ids1[:300]
+    for f in faces1:
+        faces.append(f)
+    for i in ids1:
+        ids.append(i)
     for (i, f) in enumerate(faces):
-        img = cv2.resize(f, (145,145))
+        #img = cv2.resize(f, (145,145))
         if(i == 0):
-            faces_np = np.array([img])
+            faces_np = np.array(f)
         else:
-            faces_np = np.concatenate((faces_np, np.array([img])))
+            faces_np = np.concatenate((faces_np, np.array(f)))
+    cnn = build_model((faces[0][0].shape[0], faces[0][0].shape[1]))
 
     ids = np.array(ids)
     ids = np.reshape(ids, (len(ids), 1))
@@ -128,8 +205,9 @@ else:
 
     train_generator = train_generator.flow(np.array(X_train), y_train, shuffle=False)
     test_generator = test_generator.flow(np.array(X_test), y_test, shuffle=False)
-    #train_set = np.concatenate((np.reshape(X_train, (len(X_train),1)), np.reshape(y_train, (len(y_train),1))), axis=1)
-    #test_set = np.concatenate((np.reshape(X_test, (len(X_test),1)), np.reshape(y_test, (len(y_test),1))), axis=1)
+    for (i,img) in enumerate(faces_np):
+        #im = X_train[i]
+        cv2.imwrite('cam'+str(i)+'.jpg', img)
     print(faces_np.shape, ids.shape, len(train_generator), len(test_generator)) 
     history = cnn.fit(train_generator, epochs=40, validation_data=test_generator, shuffle=True, validation_steps=len(y_test))
 
@@ -141,7 +219,7 @@ else:
     ##im = tf.expand_dims(tf, 0)
     ##print(cnn.predict(im))
     ### Save the checkpoint
-    ##cnn.save('model-'+ test_name + '.h5')
+    cnn.save('model-'+ test_name + '.h5')
 
 end_time = time.time()
 print('total time taken: ', end_time - start_time)
