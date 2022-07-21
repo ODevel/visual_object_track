@@ -3,7 +3,6 @@ import numpy as np
 import cv2 
 import os
 
-cnn = tf.keras.models.load_model('simple_detection.h5')
 
 # tests - blurbody, bird, panda
 
@@ -51,9 +50,12 @@ def class_name(val):
     else:
         return 'bird'
 
+
 class_a = 'blurbody'
 class_b = 'bird1'
 class_c = 'panda'
+
+cnn = tf.keras.models.load_model('simple_detection.h5')
 files_a = return_files(class_a)
 files_b = return_files(class_b, next_class=True)
 files_c = return_files(class_c, next_class=True)
