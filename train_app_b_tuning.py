@@ -54,8 +54,7 @@ def model_builder(hp):
         cnn.compile(loss=tf.keras.losses.MeanSquaredError(), metrics=["accuracy"], optimizer=tf.keras.optimizers.SGD(learning_rate=hp_learning_rate)) 
     return cnn
     
-def train():
-    test = sys.argv[-1]
+def train(test):
     print('Test: ' , test)
     start_time = time.time()
     

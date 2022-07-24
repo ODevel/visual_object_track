@@ -40,8 +40,7 @@ def model_builder(shpe):
     return cnn
     
 
-def train():
-    test = sys.argv[-1]
+def train(test):
     print('Test: ' , test)
     start_time = time.time()
     
