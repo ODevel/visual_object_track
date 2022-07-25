@@ -29,7 +29,7 @@ def model_builder(hp, shpe):
     cnn.add(Flatten())
     cnn.add(Dropout(0.5))
     cnn.add(Dense(64, activation="relu"))
-    cnn.add(Dense(3, activation="softmax"))
+    cnn.add(Dense(13, activation="softmax"))
     
     # Compiling the CNN
     cnn.compile(loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
@@ -42,7 +42,10 @@ b = 96
 def return_files(class_x, next_class=False):
     global l
     global b
-    path = class_x + '/' + class_x + '/p/'
+    if(os.path.exists(class_x + '/' + class_x + '/pca.img/')):
+        path = class_x + '/' + class_x + '/pca.img/'
+    else:
+        path = class_x + '/' + class_x + '/p/'
     files = os.listdir(path)
     for (i, f) in enumerate(files):
         files[i] = path + f
@@ -74,43 +77,45 @@ def return_files(class_x, next_class=False):
     return files_ar
 
 clsses = ['','','']
-def train(classes):
+def train():
     global clsses
-    clsses = classes
-    #class_a = sys.argv[-3]
-    #class_b = sys.argv[-2]
-    #class_c = sys.argv[-1]
-    class_a = clsses[0]
-    class_b = clsses[1]
-    class_c = clsses[2]
+    clsses = ['biker', 'bird1', 'blurbody', 'blurcar2', 'bolt', 'cardark', 'football', 'human3', 'human6', 'human9', 'panda', 'walking', 'walking2']
     
-    files_a = return_files(class_a)
-    files_b = return_files(class_b, next_class=True)
-    files_c = return_files(class_c, next_class=True)
+    for (i,cls) in enumerate(clsses):
+        if(i==0):
+            files = np.array(return_files(cls))
+            size = len(files)
+            labels_0 = np.zeros((size,1))
+            labels_1 = np.ones((size,1))
+            for j in range(0, len(clsses)):
+                if(j == 0):
+                    labels = labels_1
+                else:
+                    labels = np.concatenate((labels, labels_0), axis=1)
+        else:
+            tmp = return_files(cls, next_class=True)
+            size = len(tmp)
+            labels_0 = np.zeros((size,1))
+            labels_1 = np.ones((size,1))
+            for j in range(0, len(clsses)):
+                if(j == 0):
+                    labels_tmp = labels_0
+                elif(j == i):
+                    labels_tmp = np.concatenate((labels_tmp, labels_1), axis=1)
+                else:
+                    labels_tmp = np.concatenate((labels_tmp, labels_0), axis=1)
+
+            files = np.concatenate((files, tmp))
+            labels = np.concatenate((labels, labels_tmp))
     
-    labels = np.array([[0,0,1]])
-    for i in range(0,len(files_a)-1):
-        t = np.array([[0,0,1]])
-        labels = np.concatenate((labels, t))
     
-    for i in range(0,len(files_b)):
-        t = np.array([[0,1,0]])
-        labels = np.concatenate((labels, t))
-    
-    for i in range(0,len(files_c)):
-        t = np.array([[1,0,0]])
-        labels = np.concatenate((labels, t))
-    
-    # Concatenate X & y
-    files = np.concatenate((files_a, files_b))
-    files = np.concatenate((files, files_c))
-    
+
     X_train, X_test, y_train, y_test = train_test_split(files, labels, test_size=0.3, random_state=4)
     train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
     test_generator = ImageDataGenerator(rescale=1/255)
     train_generator = train_generator.flow(np.array(X_train), y_train, shuffle=False)
     test_generator = test_generator.flow(np.array(X_test), y_test, shuffle=False)
     cnn = model_builder(True, (l, b))
-    history = cnn.fit(X_train, y_train,  epochs=100, verbose=1, validation_split=0.2)
-    
+    stop_early = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10)
+    history = cnn.fit(X_train, y_train,  epochs=100, verbose=1, validation_split=0.2, callbacks=[stop_early])
     cnn.save('simple_detection.h5')

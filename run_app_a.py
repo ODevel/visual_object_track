@@ -45,8 +45,8 @@ def return_files(class_x, next_class=False):
 
 def class_name(val):
     global clsses
-    if(np.int_(val)[-1] == 1):
-        return clsses[-1]
+    if(np.int_(val)[2] == 1):
+        return clsses[2]
     elif(np.int_(val)[1] == 1):
         return clsses[1]
     else:
