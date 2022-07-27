@@ -9,14 +9,12 @@ import numpy as np
 import cv2
 from sklearn.model_selection import train_test_split
 import sys
-#import keras_tuner as kt
 import os
 import time
 
 def model_builder(hp, shpe):
     # Initialising the CNN
     cnn = tf.keras.models.Sequential()
-    #print('MODEL_BUILDER: shape:: ' , shpe)
     
     cnn.add(Conv2D(256, (3, 3), activation="relu", input_shape=[shpe[0], shpe[1], 3]))
     cnn.add(MaxPooling2D(2, 2))
@@ -32,11 +30,10 @@ def model_builder(hp, shpe):
     cnn.add(Dense(13, activation="softmax"))
     
     # Compiling the CNN
-    cnn.compile(loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    cnn.compile(loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam") 
     return cnn
 
 
-# Build class A
 l = 128
 b = 96
 def return_files(class_x, next_class=False):
@@ -108,8 +105,6 @@ def train():
             files = np.concatenate((files, tmp))
             labels = np.concatenate((labels, labels_tmp))
     
-    
-
     X_train, X_test, y_train, y_test = train_test_split(files, labels, test_size=0.3, random_state=4)
     train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
     test_generator = ImageDataGenerator(rescale=1/255)
