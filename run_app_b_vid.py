@@ -43,7 +43,9 @@ def run(test):
         h /= lf
         print('x:', x, 'y: ', y, img_orig.shape)
         cv2.putText(img_orig, test, (int(x+5),int(y-5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
-        cv2.rectangle(img_orig, (int(x),int(y)),(int((x+w)),int((y+h))), (0,255,0), 2)
+        cv2.rectangle(img_orig, (int(x),int(y)),(int((w)),int((h))), (0,255,0), 2)
         #cv2.imwrite('cam' +str(i) +'.jpg', img_orig)
         cv2.imshow('cam' +str(i) +'.jpg', img_orig)
+        k = cv2.waitKey(10) & 0xff # Press 'ESC' for exiting video
         i+=1 
+    cv2.destroyAllWindows()
