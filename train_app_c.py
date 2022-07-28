@@ -47,7 +47,7 @@ def build_model(shpe):
     return cnn 
 
 # function to get the images and label data
-def getImagesAndLabelsOpenCV(path, id):
+def getImagesAndLabelsOpenCV(path, detector, train_mode, id):
     imagePaths = [os.path.join(path,f) for f in os.listdir(path)]     
     faceSamples=[]
     ids = []
@@ -145,9 +145,9 @@ def train(test_name):
     detector = cv2.CascadeClassifier(test_name +'/'+ test_name + '/cascade/' + 'cascade.xml');
 
     if(train_mode == 'opencv'):
-        faces,ids = getImagesAndLabelsOpenCV(path,0)
+        faces,ids = getImagesAndLabelsOpenCV(path,detector,train_mode, 0)
         path = './n/'
-        faces1,ids1 = getImagesAndLabelsOpenCV(path,1)
+        faces1,ids1 = getImagesAndLabelsOpenCV(path,detector,train_mode,1)
         # Negative images
         faces1 = faces1[:300]
         ids1 = ids1[:300]
