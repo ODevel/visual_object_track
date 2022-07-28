@@ -13,7 +13,7 @@ def return_files(class_x, next_class=False):
     global l
     global b
     path = class_x + '/' + class_x + '/test/'
-    files = os.listdir(path)
+    files = os.listdir(path)[:2]
     for (i, f) in enumerate(files):
         files[i] = path + f
         img = cv2.imread(files[i])
@@ -45,12 +45,8 @@ def return_files(class_x, next_class=False):
 
 def class_name(val):
     global clsses
-    if(np.int_(val)[2] == 1):
-        return clsses[2]
-    elif(np.int_(val)[1] == 1):
-        return clsses[1]
-    else:
-        return clsses[0]
+    labels = ['biker', 'bird1', 'blurbody', 'blurcar2', 'bolt', 'cardark', 'football', 'human3', 'human6', 'human9', 'panda', 'walking', 'walking2']
+    return labels[np.argmax(val)]
 
 def run(tests):
     global clsses
@@ -67,10 +63,14 @@ def run(tests):
     prediction_a = cnn.predict(files_a)
     prediction_b = cnn.predict(files_b)
     prediction_c = cnn.predict(files_c)
+    print(prediction_a, prediction_b, prediction_c)
     
     files_a[0] = cv2.putText(files_a[0], class_name(prediction_a[0]), (int(files_a[0].shape[0]//10), int(files_a[0].shape[1]//5)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 2)
-    cv2.imwrite('cam.jpg', files_a[0])
+    cv2.imshow('cam1.jpg', files_a[0])
+    cv2.waitKey()
     files_b[0] = cv2.putText(files_b[0], class_name(prediction_b[0]), (int(files_b[0].shape[0]//10), int(files_b[0].shape[1]//5)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 2)
-    cv2.imwrite('cam1.jpg', files_b[0])
+    cv2.imshow('cam2.jpg', files_b[0])
+    cv2.waitKey()
     files_c[0] = cv2.putText(files_c[0], class_name(prediction_c[0]), (int(files_c[0].shape[0]//10), int(files_c[0].shape[1]//5)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 2)
-    cv2.imwrite('cam2.jpg', files_c[0])
+    cv2.imshow('cam3.jpg', files_c[0])
+    cv2.waitKey()

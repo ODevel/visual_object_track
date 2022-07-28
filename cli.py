@@ -82,7 +82,7 @@ APP B (Detection + Tracking):
                 print('Provide test name to run:')
                 self.print_test_names()
                 test = input()
-                run_app_b.train(test)
+                run_app_b.run(test)
             elif(key=='3'):
                 print('Enter test name to run the clip: ')
                 self.print_test_names()

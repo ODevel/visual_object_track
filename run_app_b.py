@@ -30,7 +30,11 @@ def path_to_image(path):
 def run(image_path):
     cnn_detection = tf.keras.models.load_model('simple_detection.h5')
     clsses = ['biker', 'bird1', 'blurbody', 'blurcar2', 'bolt', 'cardark', 'football', 'human3', 'human6', 'human9', 'panda', 'walking', 'walking2']
+    image_path += '/'+ image_path +'/p/'
+    im = os.listdir(image_path)[0]
+    image_path += '/' + im
     img_orig = cv2.imread(image_path)
+    print(image_path)
     img, (lf, bf) = path_to_image(image_path)
     cls = cnn_detection.predict(img)
     idx = np.argmax(cls)
@@ -54,5 +58,6 @@ def run(image_path):
     print('x:', x, 'y: ', y, img_orig.shape)
     cv2.putText(img_orig, test, (int(x+5),int(y-5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
     cv2.rectangle(img_orig, (int(x),int(y)),(int((w)),int((h))), (0,255,0), 2)
-    cv2.imwrite('cam' +'001' +'.jpg', img_orig)
+    #cv2.imwrite('cam' +'001' +'.jpg', img_orig)
     cv2.imshow('cam' +'001' +'.jpg', img_orig)
+    cv2.waitKey()
