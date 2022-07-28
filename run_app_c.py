@@ -32,14 +32,16 @@ def run(test_name):
             img,
            )
     
+        idx = 0
         for(x,y,w,h) in faces:
             cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 2)
     
             # Prediction using OpenCV - Part A
             id, confidence = recognizer.predict(gray[y:y+h,x:x+w])
     
-            cv2.putText(img, test_name, (x+5,y-5), font, 1, (255,255,255), 2)
-            cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0),1)
+            cv2.putText(img, test_name +str(idx+1), (x+5,y-5), font, 1, (255,255,255), 2)
+            #cv2.putText(img, str(confidence), (x+5,y+h-5), font, 1, (255,255,0),1)
+            idx += 1
         
         cv2.imshow('camera',img) 
         t2 = time.time()

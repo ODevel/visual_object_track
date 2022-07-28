@@ -104,7 +104,7 @@ APP B (Detection + Tracking):
 APP C (OpenCV based Detection):
 -------------------------------
 (Please note that this approach uses HUD based cascade approach.)
-1) Press '1' to train the trainer.yml and cascade.xml
+1) Press '1' to train the trainer.yml 
 2) Press '2' to try a sample video clip
 3) Press '0' to go to main menu.
 '''
