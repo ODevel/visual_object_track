@@ -23,17 +23,6 @@ from sklearn.model_selection import train_test_split
 import sys
 import time
 
-if(len(sys.argv) != 3):
-    print('''
-    Usage:
-    python3 <script> <mode> <test_name>
-    where,
-    mode: opencv | tf
-    ''')
-    quit()
-    
-test_name = sys.argv[-1]
-train_mode = sys.argv[1]
 
 def build_model(shpe):
     print(shpe)
@@ -54,18 +43,9 @@ def build_model(shpe):
     cnn.add(Dense(2, activation="softmax"))
     
     # Compiling the CNN
-    cnn.compile(loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam") #optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    cnn.compile(loss="categorical_crossentropy", metrics=["accuracy"], optimizer="adam")
     return cnn 
 
-
-# Path for face image database
-#test_name = 'blurbody'
-path = test_name + '/' + test_name + '/p/'
-
-recognizer = cv2.face.LBPHFaceRecognizer_create()
-detector = cv2.CascadeClassifier(test_name +'/'+ test_name + '/cascade/' + 'cascade.xml');
-
-#train_mode = 'opencv'
 # function to get the images and label data
 def getImagesAndLabelsOpenCV(path, id):
     imagePaths = [os.path.join(path,f) for f in os.listdir(path)]     
@@ -77,14 +57,12 @@ def getImagesAndLabelsOpenCV(path, id):
         PIL_img = Image.open(imagePath).convert('L') # convert it to grayscale
         cv_img = cv2.imread(imagePath)
         img_numpy = np.array(PIL_img,'uint8')
-        #id = int(os.path.split(imagePath)[-1].split("_")[0])
         faces = detector.detectMultiScale(img_numpy)
         for (x,y,w,h) in faces:
             if(train_mode == 'opencv'):
                 faceSamples.append(img_numpy[y:y+h, x:x+w])
             else:
                 faceSamples.append(cv_img[y:y+h,x:x+w, :])
-            #cv2.imwrite('cam'+str(i) + '.jpg',cv_img[y:y+h,x:x+w, :])
             #input()
             ids.append(id)
         i += 1
@@ -156,70 +134,79 @@ def getImagesAndLabelsTF(test):
         y_train.append(0)
     return X_train, y_train
 
-start_time = time.time()
-print ("\n [INFO] Training faces. It will take a few seconds. Wait ...")
-if(train_mode == 'opencv'):
-    faces,ids = getImagesAndLabelsOpenCV(path,0)
-    path = './n/'
-    faces1,ids1 = getImagesAndLabelsOpenCV(path,1)
-    # Negative images
-    faces1 = faces1[:300]
-    ids1 = ids1[:300]
-    for f in faces1:
-        faces.append(f)
-    for i in ids1:
-        ids.append(i)
-    recognizer.train(faces, np.array(ids))
+def train(test_name):
+    start_time = time.time()
+    print ("\n [INFO] Training faces. It will take a few seconds. Wait ...")
+    # Enabling opencv by default
+    train_mode= 'opencv'
+    # Path for face image database
+    path = test_name + '/' + test_name + '/p/'
+    recognizer = cv2.face.LBPHFaceRecognizer_create()
+    detector = cv2.CascadeClassifier(test_name +'/'+ test_name + '/cascade/' + 'cascade.xml');
+
+    if(train_mode == 'opencv'):
+        faces,ids = getImagesAndLabelsOpenCV(path,0)
+        path = './n/'
+        faces1,ids1 = getImagesAndLabelsOpenCV(path,1)
+        # Negative images
+        faces1 = faces1[:300]
+        ids1 = ids1[:300]
+        for f in faces1:
+            faces.append(f)
+        for i in ids1:
+            ids.append(i)
+        recognizer.train(faces, np.array(ids))
+        
+        # Save the model into trainer/trainer.yml
+        if(not os.path.exists(test_name+'/'+test_name+'/trainer')):
+            os.mkdir(test_name+'/'+test_name+'/trainer')
+        
+        recognizer.write(test_name + '/'+test_name+'/trainer/trainer.yml') 
+    else:
+        # TF - not much accuracy 
+        faces, ids = getImagesAndLabelsTF(test_name)
+        path = './n/'
+        faces1,ids1 = getNegativeImg(path,1, (faces[0][0].shape[0], faces[0][0].shape[1]))
+        # Negative images
+        faces1 = faces1[:300]
+        ids1 = ids1[:300]
+        for f in faces1:
+            faces.append(f)
+        for i in ids1:
+            ids.append(i)
+        for (i, f) in enumerate(faces):
+            #img = cv2.resize(f, (145,145))
+            if(i == 0):
+                faces_np = np.array(f)
+            else:
+                faces_np = np.concatenate((faces_np, np.array(f)))
+        cnn = build_model((faces[0][0].shape[0], faces[0][0].shape[1]))
     
-    # Save the model into trainer/trainer.yml
-    if(not os.path.exists(test_name+'/'+test_name+'/trainer')):
-        os.mkdir(test_name+'/'+test_name+'/trainer')
+        ids = np.array(ids)
+        ids = np.reshape(ids, (len(ids), 1))
     
-    recognizer.write(test_name + '/'+test_name+'/trainer/trainer.yml') 
-else:
-    faces, ids = getImagesAndLabelsTF(test_name)
-    path = './n/'
-    faces1,ids1 = getNegativeImg(path,1, (faces[0][0].shape[0], faces[0][0].shape[1]))
-    # Negative images
-    faces1 = faces1[:300]
-    ids1 = ids1[:300]
-    for f in faces1:
-        faces.append(f)
-    for i in ids1:
-        ids.append(i)
-    for (i, f) in enumerate(faces):
-        #img = cv2.resize(f, (145,145))
-        if(i == 0):
-            faces_np = np.array(f)
-        else:
-            faces_np = np.concatenate((faces_np, np.array(f)))
-    cnn = build_model((faces[0][0].shape[0], faces[0][0].shape[1]))
-
-    ids = np.array(ids)
-    ids = np.reshape(ids, (len(ids), 1))
-
-    X_train, X_test, y_train, y_test = train_test_split(faces_np, ids, test_size=0.3, random_state=42)
-
-    train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
-    test_generator = ImageDataGenerator(rescale=1/255)
-
-    train_generator = train_generator.flow(np.array(X_train), y_train, shuffle=False)
-    test_generator = test_generator.flow(np.array(X_test), y_test, shuffle=False)
-    for (i,img) in enumerate(faces_np):
-        #im = X_train[i]
-        cv2.imwrite('cam'+str(i)+'.jpg', img)
-    print(faces_np.shape, ids.shape, len(train_generator), len(test_generator)) 
-    history = cnn.fit(train_generator, epochs=40, validation_data=test_generator, shuffle=True, validation_steps=len(y_test))
-
-    print('--Traing is done --\n')
+        X_train, X_test, y_train, y_test = train_test_split(faces_np, ids, test_size=0.3, random_state=42)
     
-    # Predict a sample image
-    ##im = cv2.imread(test_name +'/' +test_name+'/test/' + os.listdir(test_name +'/' +test_name+'/test/')[0])
-    ##im = cv2.resize(im, (145,145))
-    ##im = tf.expand_dims(tf, 0)
-    ##print(cnn.predict(im))
-    ### Save the checkpoint
-    cnn.save('model-'+ test_name + '.h5')
-
-end_time = time.time()
-print('total time taken: ', end_time - start_time)
+        train_generator = ImageDataGenerator(rescale=1/255, zoom_range=0.2, horizontal_flip=True, rotation_range=30)
+        test_generator = ImageDataGenerator(rescale=1/255)
+    
+        train_generator = train_generator.flow(np.array(X_train), y_train, shuffle=False)
+        test_generator = test_generator.flow(np.array(X_test), y_test, shuffle=False)
+        for (i,img) in enumerate(faces_np):
+            #im = X_train[i]
+            cv2.imwrite('cam'+str(i)+'.jpg', img)
+        print(faces_np.shape, ids.shape, len(train_generator), len(test_generator)) 
+        history = cnn.fit(train_generator, epochs=40, validation_data=test_generator, shuffle=True, validation_steps=len(y_test))
+    
+        print('--Traing is done --\n')
+        
+        # Predict a sample image
+        ##im = cv2.imread(test_name +'/' +test_name+'/test/' + os.listdir(test_name +'/' +test_name+'/test/')[0])
+        ##im = cv2.resize(im, (145,145))
+        ##im = tf.expand_dims(tf, 0)
+        ##print(cnn.predict(im))
+        ### Save the checkpoint
+        cnn.save('model-'+ test_name + '.h5')
+    
+    end_time = time.time()
+    print('total time taken: ', end_time - start_time)

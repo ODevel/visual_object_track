@@ -55,6 +55,7 @@ def model_builder(hp):
     return cnn
     
 def train(test):
+    global shpe
     print('Test: ' , test)
     start_time = time.time()
     
@@ -224,7 +225,7 @@ def train(test):
                          project_name='kt_' + test + '10')
     
     
-    tuner10.search(X_train10,y_train10, epochs=40, validation_split=0.2, callbacks=[])#stop_early])
+    tuner10.search(X_train10,y_train10, epochs=40, validation_split=0.2, callbacks=[])])
     
     # Get the optimal hyperparameters
     best_hps10=tuner10.get_best_hyperparameters(num_trials=40)[0]
