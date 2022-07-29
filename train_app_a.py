@@ -113,4 +113,4 @@ def train():
     cnn = model_builder(True, (l, b))
     stop_early = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10)
     history = cnn.fit(X_train, y_train,  epochs=100, verbose=1, validation_split=0.2, callbacks=[stop_early])
-    cnn.save('simple_detection.h5')
+    cnn.save('checkpoints/'+'simple_detection.h5')

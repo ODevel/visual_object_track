@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np
 
 def run(test):
-    cnn_detection = tf.keras.models.load_model('simple_detection.h5')
+    cnn_detection = tf.keras.models.load_model('checkpoints/'+'simple_detection.h5')
     clsses = ['biker', 'bird1', 'blurbody', 'blurcar2', 'bolt', 'cardark', 'football', 'human3', 'human6', 'human9', 'panda', 'walking', 'walking2']
     test_p = test +'/' + test +'/'
     files = sorted(os.listdir(test_p +'/p/'))
@@ -23,10 +23,10 @@ def run(test):
         test = clsses[idx]
         print('Class predicted: ', test)
         if(model_loaded[test] == False):
-            models[test] = [tf.keras.models.load_model(test +'_00.h5')]
-            models[test].append(tf.keras.models.load_model(test +'_01.h5'))
-            models[test].append(tf.keras.models.load_model(test +'_10.h5'))
-            models[test].append(tf.keras.models.load_model(test +'_11.h5'))
+            models[test] = [tf.keras.models.load_model('checkpoints/'+test +'_00.h5')]
+            models[test].append(tf.keras.models.load_model('checkpoints/'+test +'_01.h5'))
+            models[test].append(tf.keras.models.load_model('checkpoints/'+test +'_10.h5'))
+            models[test].append(tf.keras.models.load_model('checkpoints/'+test +'_11.h5'))
             model_loaded[test] = True
         cnn00 = models[test][0]
         cnn01 = models[test][1]

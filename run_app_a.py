@@ -55,7 +55,7 @@ def run(tests):
     class_b = clsses[1] 
     class_c = clsses[2] 
     
-    cnn = tf.keras.models.load_model('simple_detection.h5')
+    cnn = tf.keras.models.load_model('checkpoints/'+'simple_detection.h5')
     files_a = return_files(class_a)
     files_b = return_files(class_b, next_class=True)
     files_c = return_files(class_c, next_class=True)

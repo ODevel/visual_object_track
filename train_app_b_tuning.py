@@ -147,7 +147,7 @@ def train(test):
     best_hps00=tuner00.get_best_hyperparameters(num_trials=40)[0]
     cnn00 = tuner00.hypermodel.build(best_hps00)
     history00 = cnn00.fit(X_train00, y_train00, epochs=200, verbose=1, validation_split=0.2)
-    cnn00.save(test +'_00.h5')
+    cnn00.save('checkpoints/'+test +'_00.h5')
     
     history = history00
     accuracy = history.history['loss']
@@ -189,7 +189,7 @@ def train(test):
     best_hps01=tuner01.get_best_hyperparameters(num_trials=40)[0]
     cnn01 = tuner01.hypermodel.build(best_hps01)
     history01 = cnn01.fit(X_train01, y_train01, epochs=200, verbose=1, validation_split=0.2)
-    cnn01.save(test +'_01.h5')
+    cnn01.save('checkpoints/'+test +'_01.h5')
     
     history = history01
     accuracy = history.history['loss']
@@ -231,7 +231,7 @@ def train(test):
     best_hps10=tuner10.get_best_hyperparameters(num_trials=40)[0]
     cnn10 = tuner10.hypermodel.build(best_hps10)
     history10 = cnn10.fit(X_train10, y_train10, epochs=200, verbose=1, validation_split=0.2)
-    cnn10.save(test +'_10.h5')
+    cnn10.save('checkpoints/'+test +'_10.h5')
     
     history = history10
     accuracy = history.history['loss']
@@ -273,7 +273,7 @@ def train(test):
     best_hps11=tuner11.get_best_hyperparameters(num_trials=40)[0]
     cnn11 = tuner11.hypermodel.build(best_hps11)
     history11 = cnn11.fit(X_train11, y_train11, epochs=200, verbose=1, validation_split=0.2)
-    cnn11.save(test +'_11.h5')
+    cnn11.save('checkpoints/'+test +'_11.h5')
     
     history = history11
     accuracy = history.history['loss']

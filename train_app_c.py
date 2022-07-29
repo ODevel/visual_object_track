@@ -85,10 +85,10 @@ def getNegativeImg(path, label, shape):
     return X_train, y_train
 
 def getImagesAndLabelsTF(test):
-    cnn00 = tf.keras.models.load_model(test +'_00.h5')
-    cnn01 = tf.keras.models.load_model(test +'_01.h5')
-    cnn10 = tf.keras.models.load_model(test +'_10.h5')
-    cnn11 = tf.keras.models.load_model(test +'_11.h5')
+    cnn00 = tf.keras.models.load_model('checkpoints/'+test +'_00.h5')
+    cnn01 = tf.keras.models.load_model('checkpoints/'+test +'_01.h5')
+    cnn10 = tf.keras.models.load_model('checkpoints/'+test +'_10.h5')
+    cnn11 = tf.keras.models.load_model('checkpoints/'+test +'_11.h5')
 
     test_p = test +'/' + test +'/'
     files = os.listdir(test_p +'/p/')
@@ -206,7 +206,7 @@ def train(test_name):
         ##im = tf.expand_dims(tf, 0)
         ##print(cnn.predict(im))
         ### Save the checkpoint
-        cnn.save('model-'+ test_name + '.h5')
+        cnn.save('checkpoints/'+ 'model-'+ test_name + '.h5')
     
     end_time = time.time()
     print('total time taken: ', end_time - start_time)

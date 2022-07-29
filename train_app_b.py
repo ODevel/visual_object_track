@@ -117,7 +117,7 @@ def train(test):
     test_generator = test_generator.flow(np.array(X_test00), y_test00, shuffle=False)
     cnn00 = model_builder((l, b))
     history00 = cnn00.fit(X_train00, y_train00,  epochs=200, verbose=1, validation_split=0.2)
-    cnn00.save(test +'_00.h5')
+    cnn00.save('checkpoints/'+test +'_00.h5')
     
     history = history00
     accuracy = history.history['mean_squared_error']
@@ -147,7 +147,7 @@ def train(test):
     test_generator = test_generator.flow(np.array(X_test01), y_test01, shuffle=False)
     cnn01 = model_builder((l, b))
     history01 = cnn01.fit(X_train01, y_train01,  epochs=200, verbose=1, validation_split=0.2)
-    cnn01.save(test +'_01.h5')
+    cnn01.save('checkpoints/'+test +'_01.h5')
     
     history = history01
     accuracy = history.history['mean_squared_error']
@@ -177,7 +177,7 @@ def train(test):
     test_generator = test_generator.flow(np.array(X_test10), y_test10, shuffle=False)
     cnn10 = model_builder((l, b))
     history10 = cnn10.fit(X_train10, y_train10,  epochs=200, verbose=1, validation_split=0.2)
-    cnn10.save(test +'_10.h5')
+    cnn10.save('checkpoints/'+test +'_10.h5')
     
     history = history10
     accuracy = history.history['mean_squared_error']
@@ -207,7 +207,7 @@ def train(test):
     test_generator = test_generator.flow(X_test11, y_test11, shuffle=False)
     cnn11 = model_builder((l, b))
     history11 = cnn11.fit(X_train11, y_train11,  epochs=200, verbose=1, validation_split=0.2)
-    cnn11.save(test +'_11.h5')
+    cnn11.save('checkpoints/' +test +'_11.h5')
     
     history = history11
     accuracy = history.history['mean_squared_error']

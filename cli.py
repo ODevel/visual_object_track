@@ -13,17 +13,15 @@ import apply_pca
 #########################################################################
 class CLI :
     def __init__(self):
-        print(' Instantiating a CLI instance')
+        print('Welcome to Visual Object Tracking :')
 
     def print_usage(self):
         usage = '''
-Welcome to Visual Object Tracking:
 ----------------------------------
 1) Press '1' to try simple detection (APP A)
-2) Press '2' to try CNN based detection + tracking (APP B)
+2) Press '2' to try CNN based detection + tracking (APP B) & hyper-tuning.
 3) Press '3' to try OpenCV based tracking (APP C)
 4) Press '4' to run PCA before data training
-5) Press '5' to try APP B with HyperTuning
 5) Press 'q' to exit
         '''
         print(usage)

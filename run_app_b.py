@@ -28,7 +28,7 @@ def path_to_image(path):
     return img, (lf, bf)
 
 def run(image_path):
-    cnn_detection = tf.keras.models.load_model('simple_detection.h5')
+    cnn_detection = tf.keras.models.load_model('checkpoints/' + 'simple_detection.h5')
     clsses = ['biker', 'bird1', 'blurbody', 'blurcar2', 'bolt', 'cardark', 'football', 'human3', 'human6', 'human9', 'panda', 'walking', 'walking2']
     image_path += '/'+ image_path +'/p/'
     im = os.listdir(image_path)[0]
@@ -40,10 +40,10 @@ def run(image_path):
     idx = np.argmax(cls)
     test = clsses[idx]
     print('Class predicted: ', test)
-    cnn00 = tf.keras.models.load_model(test +'_00.h5')
-    cnn01 = tf.keras.models.load_model(test +'_01.h5')
-    cnn10 = tf.keras.models.load_model(test +'_10.h5')
-    cnn11 = tf.keras.models.load_model(test +'_11.h5')
+    cnn00 = tf.keras.models.load_model('checkpoints/' +test +'_00.h5')
+    cnn01 = tf.keras.models.load_model('checkpoints/' +test +'_01.h5')
+    cnn10 = tf.keras.models.load_model('checkpoints/' +test +'_10.h5')
+    cnn11 = tf.keras.models.load_model('checkpoints/' +test +'_11.h5')
     
     #test = 'human9'
     x = cnn00.predict(img)
