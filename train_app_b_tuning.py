@@ -71,6 +71,11 @@ def train(test):
     i = 0
     for lin in line_arr:
         path = test + '/' + test+'/p/' +lin[0][2:]
+        class_x = test
+        if(os.path.exists(class_x + '/' + class_x + '/pca.img/' + lin[0][2:])):
+            path = class_x + '/' + class_x + '/pca.img/' + lin[0][2:]
+        else:
+            path = class_x + '/' + class_x + '/p/' + lin[0][2:]
         if(not os.path.exists(path)):
             #print(path, ': image not found')
             continue

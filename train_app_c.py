@@ -90,12 +90,16 @@ def getImagesAndLabelsTF(test):
     cnn10 = tf.keras.models.load_model('checkpoints/'+test +'_10.h5')
     cnn11 = tf.keras.models.load_model('checkpoints/'+test +'_11.h5')
 
-    test_p = test +'/' + test +'/'
-    files = os.listdir(test_p +'/p/')
+    class_x = test
+    if(os.path.exists(class_x + '/' + class_x + '/pca.img/')):
+        path = class_x + '/' + class_x + '/pca.img/'
+    else:
+        path = class_x + '/' + class_x + '/p/'
+    files = os.listdir(path)
     i = 0
     y_train = []
     for f in files:
-        f = test_p + '/p/' + f
+        f = path + f
         img = cv2.imread(f)
         img_orig =img
         bf = 1
@@ -140,7 +144,11 @@ def train(test_name):
     # Enabling opencv by default
     train_mode= 'opencv'
     # Path for face image database
-    path = test_name + '/' + test_name + '/p/'
+    class_x = test_name
+    if(os.path.exists(class_x + '/' + class_x + '/pca.img/')):
+        path = class_x + '/' + class_x + '/pca.img/'
+    else:
+        path = class_x + '/' + class_x + '/p/'
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     detector = cv2.CascadeClassifier(test_name +'/'+ test_name + '/cascade/' + 'cascade.xml');
 
